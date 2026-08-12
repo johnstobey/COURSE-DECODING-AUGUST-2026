@@ -33,6 +33,23 @@ SIGNS = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra",
 PLANETS = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter",
            "Saturn", "Uranus", "Neptune", "Pluto"]
 
+BOILERPLATE_LINES = [
+    r'^Return to Index\s*$',
+    r'^Return to Top\s*$',
+    r'^Go to Next Lesson\s*$',
+    r"^Bonnie's Links\s*$",
+    r'^created by Bonnie Lee Hill,\s*$',
+    r'^bonniehill@verizon\.net\s*$',
+    r'^last modified on .*\d{4}\s*$',
+]
+BOILERPLATE_RE = re.compile('|'.join(BOILERPLATE_LINES), re.MULTILINE)
+
+
+def strip_boilerplate(text):
+    lines = [ln for ln in text.split('\n') if not BOILERPLATE_RE.match(ln.strip())]
+    return '\n'.join(lines)
+
+
 GOV_KW = ["must", "shall", "should", "calculate", "verify", "rule", "law"]
 ALGO_KW = ["algorithm", "compute", "calculate", "formula", "step"]
 DEMO_KW = ["example", "demonstration", "walkthrough", "show", "illustrate"]
@@ -86,6 +103,8 @@ def main():
 
     with open(args.input, "r", encoding="utf-8") as f:
         text = f.read()
+
+    text = strip_boilerplate(text)
 
     words = split_words(text)
     sentences = split_sentences(text)

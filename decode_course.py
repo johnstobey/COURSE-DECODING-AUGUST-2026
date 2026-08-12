@@ -33,6 +33,26 @@ from typing import Dict, List, Optional
 
 LESSON_HEADER_RE = re.compile(r'^Lesson #(\d+)\s*$', re.MULTILINE)
 
+# Website chrome carried over from the source page (hosted/maintained by
+# Bonnie Lee Hill) that shows up verbatim at the end of every lesson in the
+# PDF export. It's not part of Tobey's text and pollutes every count below
+# if left in -- strip it before any analysis runs.
+BOILERPLATE_LINES = [
+    r'^Return to Index\s*$',
+    r'^Return to Top\s*$',
+    r'^Go to Next Lesson\s*$',
+    r"^Bonnie's Links\s*$",
+    r'^created by Bonnie Lee Hill,\s*$',
+    r'^bonniehill@verizon\.net\s*$',
+    r'^last modified on .*\d{4}\s*$',
+]
+BOILERPLATE_RE = re.compile('|'.join(BOILERPLATE_LINES), re.MULTILINE)
+
+
+def strip_boilerplate(text: str) -> str:
+    lines = [ln for ln in text.split('\n') if not BOILERPLATE_RE.match(ln.strip())]
+    return '\n'.join(lines)
+
 PLANETS = ["Sun", "Moon", "Mercury", "Venus", "Mars", "Jupiter",
            "Saturn", "Uranus", "Neptune", "Pluto"]
 SIGNS = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra",
@@ -190,6 +210,8 @@ def main():
 
     with open(args.input, "r", encoding="utf-8") as f:
         text = f.read()
+
+    text = strip_boilerplate(text)
 
     result = decode_course(text)
 
